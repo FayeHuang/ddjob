@@ -17,6 +17,8 @@ jobs:
     container:
       image: fayehuang/ddjob:latest
     steps:
-    - run: |
-        echo "Hello ${{ github.event.inputs.name }}!"
-        pwd
+    - uses: actions/checkout@v2
+    - name: What OS is running
+      run: uname -a
+    - name: python version
+      run: python --version
