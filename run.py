@@ -25,5 +25,5 @@ for product in target_products:
   is_arrival = is_product_arrival(product['product_url'])
   if is_arrival:
     print(product['product_url'], 'is_arrival')
-  else
+  else:
     print(product['product_url'], 'not_arrival')
