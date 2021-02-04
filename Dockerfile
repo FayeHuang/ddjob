@@ -4,7 +4,7 @@ ENV PYTHONUNBUFFERED=1 \
     LC_ALL="C.UTF-8"
 
 # install releated python package
-COPY requirements /tmp/requirements.txt
+COPY requirements.txt /tmp/requirements.txt
 
 # install python package
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
