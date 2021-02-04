@@ -2,3 +2,4 @@ pymongo
 pymongo[srv]
 dnspython
 beautifulsoup4
+requests
