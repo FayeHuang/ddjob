@@ -18,8 +18,8 @@ jobs:
       image: fayehuang/ddjob:latest
     steps:
     - uses: actions/checkout@v2
-    - name: 設定環境參數
+    - name: 執行主程式
       env: 
         mongodb_url: ${{ secrets.MONGODB_URL }}
-    - name: 執行主程式
-      run: python run.py
+      run: |
+        python run.py
