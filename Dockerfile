@@ -9,5 +9,5 @@ COPY requirements.txt /tmp/requirements.txt
 # install python package
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-COPY . /ddjob
-WORKDIR /ddjob
+#COPY . /ddjob
+#WORKDIR /ddjob
