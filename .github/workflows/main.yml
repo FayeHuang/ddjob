@@ -18,7 +18,8 @@ jobs:
       image: fayehuang/ddjob:latest
     steps:
     - uses: actions/checkout@v2
-    - name: What OS is running
-      run: uname -a
-    - name: python version
-      run: python --version
+    - name: 設定環境參數
+      env: 
+        mongodb_url: ${{ secrets.MONGODB_URL }}
+    - name: 執行主程式
+      run: python run.py
