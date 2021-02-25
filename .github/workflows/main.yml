@@ -2,7 +2,7 @@ name: 發送通知
 on:
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '10 6 * * *'
+    - cron:  '18 14 * * *'
     
 # 手動 trigger
 # on:
