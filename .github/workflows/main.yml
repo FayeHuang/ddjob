@@ -2,6 +2,16 @@ name: 發送通知
 on:
   schedule:
   - cron: "50 3 * * *"
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Person to greet'
+        required: true
+        default: 'Mona the Octocat'
+      home:
+        description: 'location'
+        required: false
+        default: 'The Octoverse'
     
 # 手動 trigger
 # on:
