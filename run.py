@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import datetime
 
 MONGODB_URI = os.environ["mongodb_url"]
-DB_NAME = "dingdong"
+DB_NAME = "dingdong_dev"
 PRODUCT_COLLECTION = "products"
 USER_COLLECTION = "users"
 
@@ -19,7 +19,7 @@ def fetch_target_product():
 
 def get_user_notify_token(userId):
   target_user = user_collec.find_one({'userId': userId})
-  if 'notifyToken' in target_user.keys():
+  if target_user and 'notifyToken' in target_user.keys():
     return target_user['notifyToken']
   else:
     return None
@@ -54,21 +54,24 @@ for product in target_products:
       { "product_url": product_url },
       { "$set": { "updated_time": datetime.datetime.utcnow() }}
     )
-  # 取得推播 token
-  userId = product['userId']
-  notify_token = None
-  if userId not in target_users.keys():
-    notify_token = get_user_notify_token(userId)
-    target_users[userId] = notify_token
-  else:
-    notify_token = target_users[userId]
-  # 發送推播
-  r = requests.post(
-        'https://notify-api.line.me/api/notify', 
-        data = { 'message': message },
-        headers = { 'Authorization': f"Bearer {notify_token}"}
-      )
-  if r.status_code == 200:
-    print(f"推播成功,{userId},{product_url},{is_arrival}")
-  else:
-    print(f"推播失敗,{userId},{product_url},{is_arrival}")
+
+  # 發送推播給所有追蹤此商品的人
+  users = product['userId']
+  for userId in users:
+    # 取得推播 token
+    notify_token = None
+    if userId not in target_users.keys():
+      notify_token = get_user_notify_token(userId)
+      target_users[userId] = notify_token
+    else:
+      notify_token = target_users[userId]
+    # 發送推播
+    r = requests.post(
+          'https://notify-api.line.me/api/notify', 
+          data = { 'message': message },
+          headers = { 'Authorization': f"Bearer {notify_token}"}
+        )
+    if r.status_code == 200:
+      print(f"推播成功,{userId},{product_url},{is_arrival}")
+    else:
+      print(f"推播失敗,{userId},{product_url},{is_arrival}")
