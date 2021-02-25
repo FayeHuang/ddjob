@@ -2,8 +2,10 @@ import os
 import pymongo
 import requests
 from bs4 import BeautifulSoup
+import datetime
 
-MONGODB_URI = os.environ["mongodb_url"]
+MONGODB_URI = "mongodb+srv://admin:diydim98@cluster0.6if3i.mongodb.net/dingdong?retryWrites=true&w=majority"
+# MONGODB_URI = os.environ["mongodb_url"]
 DB_NAME = "dingdong"
 PRODUCT_COLLECTION = "products"
 USER_COLLECTION = "users"
@@ -14,7 +16,7 @@ product_collec = db[PRODUCT_COLLECTION]
 user_collec = db[USER_COLLECTION]
 
 def fetch_target_product():
-  return list(product_collec.find({}))
+  return list(product_collec.find( { "arrival": False } ))
 
 def get_user_notify_token(userId):
   target_user = user_collec.find_one({'userId': userId})
@@ -33,7 +35,6 @@ def is_product_arrival(target_url):
   else:
     return False
 
-
 target_products = fetch_target_product()
 target_users = {}
 for product in target_products:
@@ -44,8 +45,16 @@ for product in target_products:
   message = ""
   if is_arrival:
     message = f"🥳 商品已經到貨 !!\n{product_url}"
+    product_collec.update_one(
+      { "product_url": product_url },
+      { "$set": { "updated_time": datetime.datetime.utcnow(), "arrival":True }}
+    )
   else:
     message = f"😞 商品還沒到貨\n{product_url}"
+    product_collec.update_one(
+      { "product_url": product_url },
+      { "$set": { "updated_time": datetime.datetime.utcnow() }}
+    )
   # 取得推播 token
   userId = product['userId']
   notify_token = None
