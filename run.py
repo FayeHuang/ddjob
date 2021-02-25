@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import datetime
 
 MONGODB_URI = os.environ["mongodb_url"]
-DB_NAME = "dingdong_dev"
+DB_NAME = "dingdong"
 PRODUCT_COLLECTION = "products"
 USER_COLLECTION = "users"
 
