@@ -2,7 +2,7 @@ name: 發送通知
 on:
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '30 6 * * *'
+    - cron:  "40 6 * * *"
     
 # 手動 trigger
 # on:
@@ -24,6 +24,8 @@ jobs:
       image: fayehuang/ddjob:latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        ref: "main"
     - name: 執行主程式
       env: 
         mongodb_url: ${{ secrets.MONGODB_URL }}
