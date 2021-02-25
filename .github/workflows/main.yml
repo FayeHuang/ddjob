@@ -1,18 +1,24 @@
-name: Manually triggered workflow
+name: 發送通知
 on:
-  workflow_dispatch:
-    inputs:
-      name:
-        description: 'Person to greet'
-        required: true
-        default: 'Mona the Octocat'
-      home:
-        description: 'location'
-        required: false
-        default: 'The Octoverse'
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '* 6 * * *'
+    
+# 手動 trigger
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       name:
+#         description: 'Person to greet'
+#         required: true
+#         default: 'Mona the Octocat'
+#       home:
+#         description: 'location'
+#         required: false
+#         default: 'The Octoverse'
 
 jobs:
-  say_hello:
+  run_main:
     runs-on: ubuntu-latest
     container:
       image: fayehuang/ddjob:latest
