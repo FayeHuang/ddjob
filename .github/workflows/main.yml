@@ -1,7 +1,7 @@
 name: 發送通知
 on:
   schedule:
-  - cron: "50 6 * * *"
+  - cron: "50 3 * * *"
     
 # 手動 trigger
 # on:
