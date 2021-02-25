@@ -15,7 +15,7 @@ product_collec = db[PRODUCT_COLLECTION]
 user_collec = db[USER_COLLECTION]
 
 def fetch_target_product():
-  return list(product_collec.find( { "arrival": False } ))
+  return list(product_collec.find({}))
 
 def get_user_notify_token(userId):
   target_user = user_collec.find_one({'userId': userId})
@@ -49,10 +49,10 @@ for product in target_products:
       { "$set": { "updated_time": datetime.datetime.utcnow(), "arrival":True }}
     )
   else:
-    message = f"😞 商品還沒到貨\n{product_url}"
+    message = f"商品還沒到貨\n{product_url}"
     product_collec.update_one(
       { "product_url": product_url },
-      { "$set": { "updated_time": datetime.datetime.utcnow() }}
+      { "$set": { "updated_time": datetime.datetime.utcnow(), "arrival":False }}
     )
 
   # 發送推播給所有追蹤此商品的人
