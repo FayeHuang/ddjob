@@ -4,8 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 import datetime
 
-MONGODB_URI = "mongodb+srv://admin:diydim98@cluster0.6if3i.mongodb.net/dingdong?retryWrites=true&w=majority"
-# MONGODB_URI = os.environ["mongodb_url"]
+MONGODB_URI = os.environ["mongodb_url"]
 DB_NAME = "dingdong"
 PRODUCT_COLLECTION = "products"
 USER_COLLECTION = "users"
