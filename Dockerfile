@@ -6,9 +6,7 @@ ENV PYTHONUNBUFFERED=1 \
 # to update ubuntu to correctly run apt install
 # install chrome driver and set PATH
 RUN apt-get update -y && \
-    apt install chromium-chromedriver && \
-    cp /usr/lib/chromium-browser/chromedriver /usr/bin
-ENV PATH="/usr/lib/chromium-browser/chromedriver:${PATH}"
+    apt install chromium-driver -y
 
 # install releated python package
 COPY requirements.txt /tmp/requirements.txt
