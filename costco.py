@@ -82,6 +82,7 @@ def run(target_url, collection):
     element = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'product-view__option')))
     products = driver.find_elements_by_xpath('//div[@class="product-image"]/a')
     print(f"共 {len(products)} 筆資料")
+    products.reverse()
     count = 1
     for p in products:
       url = p.get_attribute('href')
