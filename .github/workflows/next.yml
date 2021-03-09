@@ -1,0 +1,27 @@
+name: next
+on:
+  schedule:
+  - cron: "10 23 * * *"
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Person to greet'
+        required: true
+        default: 'Mona the Octocat'
+      home:
+        description: 'location'
+        required: false
+        default: 'The Octoverse'
+    
+jobs:
+  run_main:
+    runs-on: ubuntu-latest
+    container:
+      image: fayehuang/ddjob:latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: 執行主程式
+      env: 
+        mongodb_url: ${{ secrets.MONGODB_URL }}
+      run: |
+        python next.py
