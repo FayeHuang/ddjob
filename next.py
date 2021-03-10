@@ -32,36 +32,17 @@ def create_product(collection, product_data):
 def update_product(collection, product_data):
   collection.update_one({'product_url': product_data['product_url']}, {'$set':product_data})
 
-def get_product_info(product_url, collection):
-  r = requests.get(product_url)
-  web_content = r.text
-  soup = BeautifulSoup(web_content, 'html.parser')
-  res = {'product_url': product_url}
-
-  price = soup.select("div.nowPrice span")
-  res['price_original'] = price[0].text.strip() if price else None
-  
-  res['discount'] = None
-  
-  image = soup.select("div.ShotView img")
-  res['image'] = image[0]['src'] if image else None
-  
-  title = soup.select("div.Title h1")
-  res['title'] = title[0].text.strip() if title else None
-
-  res['description'] = None
-
-  if (is_product_exist(collection, product_url)):
+def sync_product_db(product, collection):
+  if (is_product_exist(collection, product['product_url'])):
     res['updated_time'] = datetime.datetime.utcnow()
     update_product(collection, res)
   else:
     res['created_time'] = datetime.datetime.utcnow()
     res['updated_time'] = datetime.datetime.utcnow()
     create_product(collection, res)
-
   return res
 
-def fetch_product_urls(page_url, driver):
+def fetch_products(page_url, driver):
   driver.get(page_url)
   driver.refresh()
 
@@ -70,34 +51,44 @@ def fetch_product_urls(page_url, driver):
   element = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'pageBreak')))
 
   products = driver.find_elements_by_class_name("Item")
-  urls = [p.find_element_by_class_name('TitleText').get_attribute('href') for p in products]
-  urls = list(OrderedDict.fromkeys(urls))
-  
   page = page_url.split('#')[1].strip()
-  # 每一頁有 24 筆資料，會 cache 第一頁和選定的那頁和下一頁 (ex: page=3, 資料會有 page=1,3,4)
+  # 每一頁有 24 筆資料，會 cache 第一頁和選定那頁的下一頁 (ex: page=3, 資料會有 page=1,3,4)
   if page == '1_0':
-    urls = urls[0:24]
+    products = products[0:24]
   else:
-    urls = urls[24:48] # 撈取當前頁的資料
-  # print(len(urls))
-  # [print(u) for u in urls]
-  return urls
+    products = products[24:48] # 撈取當前頁的資料
   
+  res = []
+  for p in products:
+    name1 = p.find_element_by_class_name('Col').get_attribute('innerHTML').strip()
+    name2 = p.find_element_by_class_name('Desc').get_attribute('innerHTML').strip()
+    price = p.find_element_by_xpath('//div[@class="Price"]/a').get_attribute('innerHTML').strip()
+    url = p.find_element_by_class_name('TitleText').get_attribute('href')
+    id = url.split('#')[1].strip()
+    image = f'https://xcdn.next.co.uk/Common/Items/Default/Default/ItemImages/SearchAlt/224x336/{id}.jpg'
+    data = {
+      'product_url': url,
+      'price_original': price,
+      'image': image,
+      'title': f'{name1} - {name2}',
+    }
+    res.append(data)
+    print(data)
+  return res
 
-def get_boy_product_urls(driver, page_amount):
+def get_boy_products(driver, page_amount):
   res = []
   for i in range(page_amount):
     page = f'https://www.next.tw/zh/shop/department-childrenswear/feat-newin-gender-newbornboys-gender-newbornunisex-gender-youngerboys#{i+1}_0'
-    res = res + fetch_product_urls(page, driver)
-  return list(OrderedDict.fromkeys(res))
+    res = res + fetch_products(page, driver)
+  return res
 
-def get_girl_product_urls(driver, page_amount):
+def get_girl_products(driver, page_amount):
   res = []
   for i in range(page_amount):
     page = f'https://www.next.tw/zh/shop/department-childrenswear/feat-newin-gender-newborngirls-gender-newbornunisex-gender-youngergirls#{i+1}_0'
-    res = res + fetch_product_urls(page, driver)
-  return list(OrderedDict.fromkeys(res))
-
+    res = res + fetch_products(page, driver)
+  return res
 
 def run():
   chrome_options = webdriver.ChromeOptions()
@@ -106,18 +97,14 @@ def run():
   chrome_options.add_argument('--disable-dev-shm-usage')
   driver = webdriver.Chrome('chromedriver', options=chrome_options)
   
-  product_urls = get_boy_product_urls(driver, 9)
+  products = get_boy_products(driver, 9)
   print("==== begin fetch next boy product ====")
-  print(f"共 {len(product_urls)} 筆")
-  product_urls.reverse()
-  [get_product_info(url, next_boy_collec) for url in product_urls]
+  print(f"共 {len(products)} 筆")
+  products.reverse()
+  [sync_product_db(product, next_boy_collec) for product in products]
 
-  product_urls = get_girl_product_urls(driver, 9)
+  products = get_girl_products(driver, 9)
   print("==== begin fetch next girl product ====")
-  print(f"共 {len(product_urls)} 筆")
-  product_urls.reverse()
-  [get_product_info(url, next_girl_collec) for url in product_urls]
-
-  
-if __name__ == '__main__':
-  run()
+  print(f"共 {len(products)} 筆")
+  products.reverse()
+  [sync_product_db(product, next_girl_collec) for product in products]
