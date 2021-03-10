@@ -78,7 +78,7 @@ def fetch_products(page_url, driver):
       'product_url': url,
       'price_original': price,
       'image': image,
-      'title': f'{name1} - {name2}',
+      'title': title,
     }
     res.append(data)
     print(data)
