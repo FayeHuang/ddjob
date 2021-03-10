@@ -110,4 +110,5 @@ def run():
   [sync_product_db(product, next_girl_collec) for product in products]
 
 if __name__ == '__main__':
+  run()
   
