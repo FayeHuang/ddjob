@@ -43,7 +43,7 @@ def get_product_info(product_url, collection):
   
   res['discount'] = None
   
-  image = soup.select("section.StyleImages img")
+  image = soup.select("div.ShotView img")
   res['image'] = image[0]['src'] if image else None
   
   title = soup.select("div.Title h1")
