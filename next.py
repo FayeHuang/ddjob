@@ -108,3 +108,6 @@ def run():
   print(f"共 {len(products)} 筆")
   products.reverse()
   [sync_product_db(product, next_girl_collec) for product in products]
+
+if __name__ == '__main__':
+  
