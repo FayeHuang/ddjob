@@ -60,8 +60,16 @@ def fetch_products(page_url, driver):
   
   res = []
   for p in products:
-    name1 = p.find_element_by_class_name('Col').get_attribute('innerHTML').strip()
-    name2 = p.find_element_by_class_name('Desc').get_attribute('innerHTML').strip()
+    title = ""
+    col_elements = p.find_elements_by_class_name('Col')
+    desc_elements = p.find_elements_by_class_name('Desc')
+    if len(col_elements) > 0 and len(desc_elements) > 0:
+      title = f"{col_elements[0].get_attribute('innerHTML').strip()} - {desc_elements[0].get_attribute('innerHTML').strip()}"
+    elif len(col_elements) > 0 and len(desc_elements) == 0:
+      title = col_elements[0].get_attribute('innerHTML').strip()
+    elif len(col_elements) == 0 and len(desc_elements) > 0:
+      title = desc_elements[0].get_attribute('innerHTML').strip()
+    
     price = p.find_element_by_xpath('//div[@class="Price"]/a').get_attribute('innerHTML').strip()
     url = p.find_element_by_class_name('TitleText').get_attribute('href')
     id = url.split('#')[1].strip()
