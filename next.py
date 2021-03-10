@@ -34,13 +34,13 @@ def update_product(collection, product_data):
 
 def sync_product_db(product, collection):
   if (is_product_exist(collection, product['product_url'])):
-    res['updated_time'] = datetime.datetime.utcnow()
-    update_product(collection, res)
+    product['updated_time'] = datetime.datetime.utcnow()
+    update_product(collection, product)
   else:
-    res['created_time'] = datetime.datetime.utcnow()
-    res['updated_time'] = datetime.datetime.utcnow()
-    create_product(collection, res)
-  return res
+    product['created_time'] = datetime.datetime.utcnow()
+    product['updated_time'] = datetime.datetime.utcnow()
+    create_product(collection, product)
+  return product
 
 def fetch_products(page_url, driver):
   driver.get(page_url)
