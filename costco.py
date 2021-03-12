@@ -34,7 +34,7 @@ def get_product_info(product_url, arrival, collection):
   res['url'] = 'https://www.costco.com.tw/p/'+res['_id']
 
   price = soup.select("div.price-original span.notranslate")
-  res['price_original'] = price[0].text.strip() if price else None
+  res['price'] = price[0].text.strip() if price else None
   
   discount = soup.select("div.discount span.notranslate")
   res['discount'] = discount[0].text.strip() if discount else None
