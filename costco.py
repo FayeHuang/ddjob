@@ -6,21 +6,12 @@ from selenium.webdriver.support import expected_conditions as EC
 import requests
 from bs4 import BeautifulSoup
 import datetime
-import os
-import pymongo
 
-MONGODB_URI = os.environ["mongodb_url"]
-DB_NAME = "dingdong"
-COSTCO_DISCOUNT_COLLECTION = "costco_discount"
-COSTCO_LATEST_COLLECTION = "costco_latest"
+from lib.db import connect_db
 
-client = pymongo.MongoClient(MONGODB_URI)
-db = client[DB_NAME]
-costco_discount_collec = db[COSTCO_DISCOUNT_COLLECTION]
-costco_latest_collec = db[COSTCO_LATEST_COLLECTION]
 
-def is_product_exist(collection, product_url):
-  if collection.find_one({'product_url': product_url}):
+def is_product_exist(collection, product_id):
+  if collection.find_one({'_id': product_id}):
     return True
   else:
     return False
@@ -29,19 +20,24 @@ def create_product(collection, product_data):
   collection.insert_one(product_data)
 
 def update_product(collection, product_data):
-  collection.update_one({'product_url': product_data['product_url']}, {'$set':product_data})
-
-def get_product_info(product_url, collection):
+  collection.update_one({'_id': product_data['_id']}, {'$set': product_data})
+ 
+def get_product_info(product_url, arrival, collection):
   r = requests.get(product_url)
   web_content = r.text
   soup = BeautifulSoup(web_content, 'html.parser')
-  res = {'product_url': product_url}
+  
+  res = {}
+  product_id = soup.select("p.product-code span.notranslate")
+  res['_id'] = product_id[0].text.strip() if product_id else None
+  res['arrival'] = arrival
+  res['url'] = 'https://www.costco.com.tw/p/'+res['_id']
 
   price = soup.select("div.price-original span.notranslate")
-  res['price_original'] = price[0].text if price else None
+  res['price_original'] = price[0].text.strip() if price else None
   
   discount = soup.select("div.discount span.notranslate")
-  res['discount'] = discount[0].text if discount else None
+  res['discount'] = discount[0].text.strip() if discount else None
   
   image = soup.find("meta", property="og:image")
   res['image'] = image['content'] if image else None
@@ -52,19 +48,13 @@ def get_product_info(product_url, collection):
   description = soup.find("meta", property="og:description")
   res['description'] = description['content'] if description else None
 
-  if soup.find(id="addToCartButton"):
-    res['arrival'] = True
-  else:
-    res['arrival'] = False
-
-  if (is_product_exist(collection, product_url)):
+  if (is_product_exist(collection, res['_id'])):
     res['updated_time'] = datetime.datetime.utcnow()
     update_product(collection, res)
   else:
     res['created_time'] = datetime.datetime.utcnow()
     res['updated_time'] = datetime.datetime.utcnow()
     create_product(collection, res)
-
   return res
 
 def run(target_url, collection):
@@ -80,22 +70,27 @@ def run(target_url, collection):
   try:
     wait = WebDriverWait(driver, 10)
     element = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'product-view__option')))
-    products = driver.find_elements_by_xpath('//div[@class="product-image"]/a')
+    products = driver.find_elements_by_class_name('product-image')
     print(f"共 {len(products)} 筆資料")
     products.reverse()
     count = 1
     for p in products:
-      url = p.get_attribute('href')
-      get_product_info(url, collection)
+      url = p.find_element_by_tag_name('a').get_attribute('href')
+      arrival = True
+      out_of_stock_status = p.find_elements_by_class_name('out-of-stock-message')
+      if len(out_of_stock_status) > 0:
+        arrival = False
+      get_product_info(url, arrival, collection)
       print(f'[ok][{count}] {url}')
-      count += 1
+      count = count + 1
   finally:
     driver.quit()
 
 if __name__ == '__main__':
+  db = connect_db()
   print("==== 擷取 優惠商品 ====")
-  run("https://www.costco.com.tw/c/98", costco_discount_collec)
+  run("https://www.costco.com.tw/c/98", db["costco_discount"])
 
   print("==== 擷取 最新商品 ====")
-  run("https://www.costco.com.tw/c/99", costco_latest_collec)
+  run("https://www.costco.com.tw/c/99", db["costco_latest"])
 
