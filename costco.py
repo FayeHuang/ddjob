@@ -32,13 +32,16 @@ def get_product_info(product_url, arrival, collection):
   res['_id'] = product_id[0].text.strip() if product_id else None
   res['arrival'] = arrival
   res['url'] = 'https://www.costco.com.tw/p/'+res['_id']
-
-  price = soup.select("div.price-original span.notranslate")
-  res['price'] = price[0].text.strip() if price else None
   
   discount = soup.select("div.discount span.notranslate")
   res['discount'] = discount[0].text.strip() if discount else None
   
+  if not discount:
+    price = soup.select("span.product-price-amount span.notranslate")
+  else:
+    price = soup.select("div.price-after-discount span.you-pay-value")
+  res['price'] = price[0].text.strip() if price else None
+    
   image = soup.find("meta", property="og:image")
   res['image'] = image['content'] if image else None
 
