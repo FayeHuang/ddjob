@@ -1,6 +1,6 @@
 import datetime
 
-from lib.db import connect_db
+from mylib.db import connect_db
 
 def clean(collection):
   collection.delete_many({'updated_time': {'$lt': datetime.datetime.utcnow() - datetime.timedelta(days=2)}})

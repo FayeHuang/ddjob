@@ -7,7 +7,7 @@ import requests
 from bs4 import BeautifulSoup
 import datetime
 
-from lib.db import connect_db
+from mylib.db import connect_db
 
 
 def is_product_exist(collection, product_id):
