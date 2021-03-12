@@ -1,7 +1,7 @@
-name: "fetch costco"
+name: "clean costco data"
 on:
   schedule:
-  - cron: "0 */4 * * *"
+  - cron: "0 16 * * *"
   workflow_dispatch:
     inputs:
       name:
@@ -24,4 +24,4 @@ jobs:
       env: 
         mongodb_url: ${{ secrets.MONGODB_URL }}
       run: |
-        python costco.py
+        python costco_clean.py
