@@ -83,14 +83,14 @@ def fetch_products(page_url, driver):
 def get_boy_products(driver, page_amount):
   res = []
   for i in range(page_amount):
-    page = f'https://www.next.tw/zh/shop/department-childrenswear/feat-newin-gender-newbornboys-gender-newbornunisex-gender-youngerboys#{i+1}_0'
+    page = f'https://www.next.tw/zh/shop/gender-newbornboys-gender-newbornunisex-gender-olderboys-gender-youngerboys/feat-newin-isort-score#{i+1}_0'
     res = res + fetch_products(page, driver)
   return res
 
 def get_girl_products(driver, page_amount):
   res = []
   for i in range(page_amount):
-    page = f'https://www.next.tw/zh/shop/department-childrenswear/feat-newin-gender-newborngirls-gender-newbornunisex-gender-youngergirls#{i+1}_0'
+    page = f'https://www.next.tw/zh/shop/gender-newborngirls-gender-newbornunisex-gender-oldergirls-gender-youngergirls/feat-newin-isort-score#{i+1}_0'
     res = res + fetch_products(page, driver)
   return res
 
