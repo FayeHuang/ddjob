@@ -9,7 +9,6 @@ import datetime
 
 from mylib.db import connect_db
 
-
 def is_product_exist(collection, product_id):
   if collection.find_one({'_id': product_id}):
     return True
@@ -29,6 +28,8 @@ def get_product_info(product_url, arrival, collection):
   
   res = {}
   product_id = soup.select("p.product-code span.notranslate")
+  if not product_id: # 如果找不到 id 就回傳
+    return res
   res['_id'] = product_id[0].text.strip() if product_id else None
   res['arrival'] = arrival
   res['url'] = 'https://www.costco.com.tw/p/'+res['_id']
