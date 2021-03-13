@@ -10,18 +10,10 @@ import os
 import pymongo
 from collections import OrderedDict
 
-MONGODB_URI = os.environ["mongodb_url"]
-DB_NAME = "dingdong"
-NEXT_BOY_COLLECTION = "next_boy_latest"
-NEXT_GIRL_COLLECTION = "next_girl_latest"
+from mylib.db import connect_db
 
-client = pymongo.MongoClient(MONGODB_URI)
-db = client[DB_NAME]
-next_boy_collec = db[NEXT_BOY_COLLECTION]
-next_girl_collec = db[NEXT_GIRL_COLLECTION]
-
-def is_product_exist(collection, product_url):
-  if collection.find_one({'product_url': product_url}):
+def is_product_exist(collection, product_id):
+  if collection.find_one({'_id': product_id}):
     return True
   else:
     return False
@@ -30,10 +22,10 @@ def create_product(collection, product_data):
   collection.insert_one(product_data)
 
 def update_product(collection, product_data):
-  collection.update_one({'product_url': product_data['product_url']}, {'$set':product_data})
+  collection.update_one({'_id': product_data['_id']}, {'$set': product_data})
 
 def sync_product_db(product, collection):
-  if (is_product_exist(collection, product['product_url'])):
+  if (is_product_exist(collection, product['_id'])):
     product['updated_time'] = datetime.datetime.utcnow()
     update_product(collection, product)
   else:
@@ -60,6 +52,7 @@ def fetch_products(page_url, driver):
   
   res = []
   for p in products:
+    product_id = p.get_attribute('data-itemnumber')
     title = ""
     col_elements = p.find_elements_by_class_name('Col')
     desc_elements = p.find_elements_by_class_name('Desc')
@@ -69,14 +62,17 @@ def fetch_products(page_url, driver):
       title = col_elements[0].get_attribute('innerHTML').strip()
     elif len(col_elements) == 0 and len(desc_elements) > 0:
       title = desc_elements[0].get_attribute('innerHTML').strip()
+    else:
+      title = p.find_element_by_class_name('TitleText').get_attribute('innerHTML').strip()
     
     price = p.find_element_by_xpath('//div[@class="Price"]/a').get_attribute('innerHTML').strip()
     url = p.find_element_by_class_name('TitleText').get_attribute('href')
     id = url.split('#')[1].strip()
     image = f'https://xcdn.next.co.uk/Common/Items/Default/Default/ItemImages/SearchAlt/224x336/{id}.jpg'
     data = {
-      'product_url': url,
-      'price_original': price,
+      '_id': product_id,
+      'url': url,
+      'price': price,
       'image': image,
       'title': title,
     }
@@ -99,24 +95,25 @@ def get_girl_products(driver, page_amount):
   return res
 
 def run():
+  db = connect_db()
+
   chrome_options = webdriver.ChromeOptions()
   chrome_options.add_argument('--headless')
   chrome_options.add_argument('--no-sandbox')
   chrome_options.add_argument('--disable-dev-shm-usage')
   driver = webdriver.Chrome('chromedriver', options=chrome_options)
   
-  products = get_boy_products(driver, 9)
   print("==== begin fetch next boy product ====")
+  products = get_boy_products(driver, 9)
   print(f"共 {len(products)} 筆")
   products.reverse()
-  [sync_product_db(product, next_boy_collec) for product in products]
+  [sync_product_db(product, db["next_boy_latest"]) for product in products]
 
-  products = get_girl_products(driver, 9)
   print("==== begin fetch next girl product ====")
+  products = get_girl_products(driver, 9)
   print(f"共 {len(products)} 筆")
   products.reverse()
-  [sync_product_db(product, next_girl_collec) for product in products]
+  [sync_product_db(product, db["next_girl_latest"]) for product in products]
 
 if __name__ == '__main__':
   run()
-  
