@@ -9,3 +9,5 @@ if __name__ == '__main__':
   db = connect_db()
   clean(db["costco_discount"])
   clean(db["costco_latest"])
+  clean(db["next_boy_latest"])
+  clean(db["next_girl_latest"])
